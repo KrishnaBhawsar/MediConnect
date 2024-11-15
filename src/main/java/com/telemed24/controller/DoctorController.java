@@ -3,6 +3,7 @@ package com.telemed24.controller;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import com.telemed24.service.AppointmentService;
 import com.telemed24.service.DoctorService;
 import com.telemed24.service.PatientService;
 import com.telemed24.service.TimeSlotService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +46,6 @@ public class DoctorController {
     private final AppointmentService appointmentService;
     private final EmailServiceImpl mailService;
 
-
     @GetMapping("/view-profile")
     public ResponseEntity<Doctor> viewProfile(HttpServletRequest request) {
         HttpSession session=request.getSession(false);
@@ -67,9 +68,8 @@ public class DoctorController {
         return new ResponseEntity<List<Doctor>>(doctors,HttpStatus.OK);
     }
 
-
     @GetMapping("/getdoctorby")
-    public ResponseEntity<List<Doctor>> getDoctorBy(@RequestParam("searchBy") String searchBy,@RequestParam("value") String value) {
+    public ResponseEntity<List<ResponseDoctor>> getDoctorBy(@RequestParam("searchBy") String searchBy,@RequestParam("value") String value) {
         List<Doctor> doctors=null;
         System.out.println("\nSearching doctor by "+searchBy+"\n value = "+value);
 
@@ -82,7 +82,12 @@ public class DoctorController {
         }
 
         System.out.println(doctors);
-        return new ResponseEntity<List<Doctor>>(doctors,HttpStatus.OK);
+        List<ResponseDoctor> responseDoctors=new ArrayList<>();
+        for(Doctor doctor:doctors) {
+            ResponseDoctor responseDoctor = new ResponseDoctor(doctor.getId(), doctor.getSpecialization(), doctor.getCity(), doctor.getName());
+            responseDoctors.add(responseDoctor);
+        }
+        return new ResponseEntity<List<ResponseDoctor>>(responseDoctors,HttpStatus.OK);
     }
 
     // Get all available Time slots of a particular doctor
@@ -210,6 +215,7 @@ public class DoctorController {
     }
     @PostMapping("/addtimeslot")
     public ResponseEntity<String> addTimeSlot(@RequestBody List<TimeSlot> slots,@RequestParam("email") String email) {
+        System.out.println("inside add time slot");
         timeSlotService.addSlot(slots,email);
         return ResponseEntity.ok("slots added");
     }
@@ -221,4 +227,3 @@ public class DoctorController {
 //        return new ResponseEntity<List<Doctor>>(doctors,HttpStatus.OK);
 //    }
 }
-

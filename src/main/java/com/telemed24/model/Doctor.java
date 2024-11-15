@@ -1,9 +1,9 @@
 package com.telemed24.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.telemed24.model.secondarymodel.TimeSlot;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

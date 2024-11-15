@@ -11,6 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = {"patient","doctor"})
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +21,6 @@ public class Appointment {
     @ManyToOne
     private Doctor doctor;
     private String date;
-    private String prescription;
+    private String time;
     private String mode;
 }

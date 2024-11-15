@@ -9,17 +9,13 @@ import com.telemed24.service.DoctorService;
 import com.telemed24.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -113,36 +109,48 @@ public class PatientController {
 //    }
 
 
-    // To extract all appointments of patient
-//    @GetMapping("/getappointments")
-//    public ResponseEntity<List<ViewAppointment>> getAppointments(HttpServletRequest request) {
-//        List<Appointment> appointments=null;
-//        List<ViewAppointment> viewAppointments=new ArrayList<>();
-//
-//        HttpSession session=request.getSession(false);
-//
-//        if(session==null) {
-//            System.out.println("\nPatient is not logged-in Session= "+session);
-//            return new ResponseEntity<>(null,HttpStatus.OK);
-//        } else	System.out.println("Patient session already existed");
-//        String patientEmail=(String) session.getAttribute("USER_EMAIL");
-//        int patientKey=patientDao.extract(patientEmail).getId();
-//
-//        appointments=appointmentDao.extractPatientAppointments(patientKey);
-//        for(Appointment appointment:appointments) {
-//            Doctor doctor=doctorDao.extract(appointment.getDoctorId());
-//            Patient patient=patientDao.extract(appointment.getPatientId());
-//
-//            ViewAppointment viewAppointment=new ViewAppointment(doctor.getName(),
-//                    patient.getName(),
-//                    appointment.getMode(),
-//                    appointment.getPrescription(),
-//                    doctor.getSpecialization(),
-//                    appointment.getDate());
-//            viewAppointments.add(viewAppointment);
-//        }
-//
-//        return new ResponseEntity<List<ViewAppointment>>(viewAppointments,HttpStatus.OK);
-//    }
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @ToString
+    @Setter
+    @Getter
+    static class ViewAppointment {
+        private String doctorName;
+        private LocalDate date;
+        private LocalTime time;
+        private  String location;
+        private String specialization;
+    }
+//     To extract all appointments of patient
+    @GetMapping("/getappointments")
+    public ResponseEntity<List<ViewAppointment>> getAppointments(HttpServletRequest request) {
+        List<Appointment> appointments=null;
+        List<ViewAppointment> viewAppointments=new ArrayList<>();
+
+        HttpSession session=request.getSession(false);
+
+        if(session==null) {
+            System.out.println("\nPatient is not logged-in Session= "+ null);
+            return new ResponseEntity<>(null,HttpStatus.OK);
+        } else	System.out.println("Patient session already existed");
+        String patientEmail=(String) session.getAttribute("USER_EMAIL");
+        System.out.println(patientEmail);
+        Patient patient=patientService.findByEmail(patientEmail).get();
+        System.out.println("Patinet = "+patient);
+
+        appointments=appointmentService.findAllByPatient(patient);
+        System.out.println("appointments = "+appointments);
+        for(Appointment appointment:appointments) {
+            ViewAppointment viewAppointment=new ViewAppointment();
+            viewAppointment.setDoctorName(appointment.getDoctor().getName());
+            viewAppointment.setDate(LocalDate.now());
+            viewAppointment.setTime(LocalTime.parse(appointment.getTime()));
+            viewAppointment.setLocation(appointment.getDoctor().getAddress());
+            viewAppointment.setSpecialization(appointment.getDoctor().getSpecialization());
+            viewAppointments.add(viewAppointment);
+        }
+
+        return ResponseEntity.ok(viewAppointments);
+    }
 }
 
